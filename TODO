@@ -1,0 +1,11 @@
+Make a note somewhere, these were the instructions I followed to set this all up: https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-uswgi-and-nginx-on-ubuntu-18-04
+
+Otherwise:
+- Rename this project something sensible
+- Get this up on github
+- Add a client codepath, endpoints for exchanging info
+
+Thinking:
+- Server GET endpoint to enumerate cached songs
+-- Response responds w/list of cached songs
+- Client can POST to add a song
