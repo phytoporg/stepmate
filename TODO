@@ -1,8 +1,7 @@
 Make a note somewhere, these were the instructions I followed to set this all up: https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-uswgi-and-nginx-on-ubuntu-18-04
 
 NEXT:
-- Client can enumerate songs w/metadata
-- Client can POST to add a song on the server
+- Client correctly enumerates all songs (not happening atm)
 - Client can delete a song
 - Server actually persists song data somewhere
 - Response responds w/list of cached songs
@@ -12,10 +11,5 @@ DONE:
 - Get this up on github
 - Add a client codepath, endpoints for exchanging info
 - Server GET endpoint to enumerate cached songs
-
-Getting the client to parse songs:
-- Needs path to the stepmania songs directory
-- Structure is:
--- <stepmania install root>/Songs/<Group>/<Song>
---- Then: the <Song>.sm file has song data. We'll just start with the artist for now.
-
+- Client can enumerate songs w/metadata
+- Client can POST to add a song on the server
