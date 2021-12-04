@@ -1,14 +1,32 @@
-<table>
-	<tr>
-		<td><b>Title</b></td>
-		<td><b>Artist</b></td>
-		<td><b>Group</b></td>
-	</tr>
-    {% for song in songs %}
-	<tr>
-		<td>{{ song.title }}</td>
-		<td>{{ song.artist }}</td>
-		<td>{{ song.group }}</td>
-	</tr>
-    {% endfor %}
-</table>
+{% extends "base.html" %}
+
+{% block content %}
+  <table id="data" class="table table-striped nowrap">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Artist</th>
+        <th>Group</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+{% endblock %}
+ 
+{% block scripts %}
+  <script>
+    $(document).ready(function () {
+      $('#data').DataTable({
+        ajax: '/api/data',
+        serverSide: true,
+        responsive: true,
+        columns : [
+            {data : 'title', searchable: true, orderable: true},
+            {data : 'artist', searchable: true, orderable: true},
+            {data : 'group', searchable: true, orderable: true},
+        ],
+      });
+    });
+  </script>
+{% endblock %}

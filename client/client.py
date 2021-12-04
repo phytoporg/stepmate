@@ -67,15 +67,19 @@ def _server_add_songs(host, port, songs_to_send):
             print(f'Sent {title}')
 
 def main(args):
-    if not os.path.exists(args.songs_dir):
-        print(f'Song directory {args.songs_dir} does not exist')
-        exit(-1)
+    if args.songs_file and os.path.exists(args.songs_file) and os.path.isfile(args.songs_file):
+        with open(args.songs_file, 'r') as fr:
+            local_songs = json.loads(fr.read())
+    else:
+        if not os.path.exists(args.songs_dir):
+            print(f'Song directory {args.songs_dir} does not exist')
+            exit(-1)
 
-    if not os.path.isdir(args.songs_dir):
-        print(f'Not a directory: {args.songs_dir}')
-        exit(-1)
+        if not os.path.isdir(args.songs_dir):
+            print(f'Not a directory: {args.songs_dir}')
+            exit(-1)
 
-    local_songs = _enumerate_local_songs(args.songs_dir)
+        local_songs = _enumerate_local_songs(args.songs_dir)
 
     # TODO: Only send what's missing on the server. Issue is, tough to check for duplicates right
     # now without further insights into what's actually in a song. Need stepmania file parsing
@@ -90,7 +94,10 @@ def main(args):
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--songs-dir', type=str, required=True)
+    # Must choose one of these two options
+    parser.add_argument('--songs-dir', type=str)
+    parser.add_argument('--songs-file', type=str)
+
     parser.add_argument('--server-host', type=str, required=True)
     parser.add_argument('--server-port', type=int, required=True)
     parser.add_argument('--dump-songs', action='store_true')

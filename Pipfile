@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 Flask = "*"
 uWSGI = "*"
+flask-sqlalchemy = "*"
+requests = "*"
 
 [dev-packages]
 
