@@ -1,7 +1,9 @@
 Make a note somewhere, these were the instructions I followed to set this all up: https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-uswgi-and-nginx-on-ubuntu-18-04
 
 NEXT:
-- Client correctly enumerates all songs (not happening atm)
+- Song data index & search
+- Some kinda test dataset for the client
+
 - Client can delete a song
 - Server actually persists song data somewhere
 - Response responds w/list of cached songs
@@ -13,3 +15,4 @@ DONE:
 - Server GET endpoint to enumerate cached songs
 - Client can enumerate songs w/metadata
 - Client can POST to add a song on the server
+- Client correctly enumerates all songs
