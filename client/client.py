@@ -1,6 +1,7 @@
 import requests
 import argparse
 import os
+import json
 
 def _enumerate_remote_songs(host, port):
     uri = f'http://{host}:{port}/api/songs/list'
@@ -82,12 +83,16 @@ def main(args):
     # remote_songs = _enumerate_remote_songs(args.server_host, args.server_port)
 
     songs_to_send = local_songs
-    _server_add_songs(args.server_host, args.server_port, songs_to_send)
+    if args.dump_songs:
+        print(json.dumps(songs_to_send))
+    else:
+        _server_add_songs(args.server_host, args.server_port, songs_to_send)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--songs-dir', type=str, required=True)
     parser.add_argument('--server-host', type=str, required=True)
     parser.add_argument('--server-port', type=int, required=True)
+    parser.add_argument('--dump-songs', action='store_true')
 
     main(parser.parse_args())
