@@ -19,6 +19,6 @@ if [ -z "$SERVER_PORT" ]; then
     SERVER_PORT=8000
 fi
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/../client"
 python client.py --songs-dir "$SONGS_DIR" --server-host "$SERVER_HOST" --server-port "$SERVER_PORT"
 cd -
