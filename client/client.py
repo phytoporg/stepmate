@@ -41,7 +41,7 @@ def _get_song_from_songdir(songdir):
                     break
                 
                 with open(banner_file, 'rb') as fr_banner:
-                    banner_encoded = str(base64.b64encode(fr_banner.read()))
+                    banner_encoded = base64.b64encode(fr_banner.read()).decode('utf-8')
 
             elif line.startswith("#ARTIST"):
                 artist = value
