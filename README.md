@@ -3,6 +3,9 @@ Stepmate is a companion web app for Stepmania. This is very much a small side pr
 1) Make searching for songs in a well-populated Stepmania setup a triviality from a phone or other device.
 2) Allow folks to create and manage song playlists for a user profile attached to a given Stepmania box.
 
+It currently looks like this:
+![stepmate_01](https://user-images.githubusercontent.com/4349167/147163270-73460c0e-130f-4a7a-aea9-787ccc9dbc2d.png)
+
 Stretch goals which may never happen: 
 - Integrations with Stepmania for queuing up songs in a social setting and smarter profile management to track song stats and performance
 - On-the-fly song downloads from centralized song and stepchart repositories
