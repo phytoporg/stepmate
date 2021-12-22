@@ -14,11 +14,26 @@ def _enumerate_remote_songs(host, port):
 
     return r.json()['songs']
 
+def _find_sm_file(songdir):
+    candidates = [f for f in os.listdir(songdir) if f.endswith('.sm') or f.endswith('.ssc')]
+    if len(candidates) == 0:
+        return None
+
+    if len(candidates) > 1:
+        # TODO: log levels
+        # print(f'Warning: multiple candidate step files in {songdir}')
+        pass
+
+    # Just use the first one
+    return os.path.join(songdir, candidates[0])
+
 def _get_song_from_songdir(songdir):
     group_name = os.path.basename(os.path.dirname(songdir))
     song_name = os.path.basename(songdir)
-    sm_file = os.path.join(songdir, f'{song_name}.sm')
-    assert os.path.exists(sm_file)
+    sm_file = _find_sm_file(songdir)
+    if not sm_file:
+        print(f'Could not get valid step file from {songdir}')
+        return None
 
     artist = "Unknown"
     banner_encoded = None
@@ -61,8 +76,7 @@ def _enumerate_local_songs(stepmania_songs_dir):
     for g in groups:
         group_dir = os.path.join(stepmania_songs_dir, g)
         group_song_dirs = [d for d in os.listdir(group_dir) \
-                if os.path.isdir(os.path.join(group_dir, d)) and \
-                   os.path.exists(os.path.join(group_dir, d, f'{d}.sm'))]
+                if os.path.isdir(os.path.join(group_dir, d))]
 
         for songdir in group_song_dirs:
             abs_songdir = os.path.join(stepmania_songs_dir, group_dir, songdir)
@@ -102,6 +116,13 @@ def main(args):
 
     # Working around my crappy workflow. TODO: FIX.
     songs_to_send = [s for s in local_songs if len(s['artist']) > 0]
+    if args.list_songs:
+        # The dump is illegible with the banner data
+        for s in songs_to_send:
+            s['banner_data'] = 'Emptied'
+
+        print(json.dumps(songs_to_send, indent=4))
+        exit(0)
         
     if args.dump_songs:
         MAX_DUMP_SONGS = 100
@@ -120,5 +141,6 @@ if __name__=='__main__':
     parser.add_argument('--server-host', type=str, required=True)
     parser.add_argument('--server-port', type=int, required=True)
     parser.add_argument('--dump-songs', action='store_true')
+    parser.add_argument('--list-songs', action='store_true')
 
     main(parser.parse_args())
