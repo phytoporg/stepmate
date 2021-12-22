@@ -36,7 +36,7 @@ class Song(db.Model):
             'title' : self.title,
             'artist' : self.artist,
             'group' : self.group,
-            'banner_data' : self.banner_data.decode('utf-8')
+            'banner_data' : self.banner_data
         }
 
 db.create_all()

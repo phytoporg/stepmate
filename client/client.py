@@ -32,18 +32,15 @@ def _get_song_from_songdir(songdir):
                 # Kill the trailing semicolon
                 value = line.strip()[idx + 1:][:-1]
 
-            if line.startswith("#BANNER"):
+            if line.startswith("#BANNER") and len(value) > 0:
                 banner_file = os.path.join(songdir, value)
                 if not os.path.isfile(banner_file):
                     continue
 
-                if not os.path.exists(banner_file):
-                    break
-                
                 with open(banner_file, 'rb') as fr_banner:
                     banner_encoded = base64.b64encode(fr_banner.read()).decode('utf-8')
 
-            elif line.startswith("#ARTIST"):
+            elif line.startswith("#ARTIST") and len(value) > 0:
                 artist = value
 
             if artist and banner_encoded:
@@ -54,7 +51,7 @@ def _get_song_from_songdir(songdir):
         'group' : group_name,
         'artist': artist,
         'banner_data' : banner_encoded,
-    } if artist and banner_data else None
+    } if artist else None
 
 def _enumerate_local_songs(stepmania_songs_dir):
     groups = [d for d in os.listdir(stepmania_songs_dir) \
