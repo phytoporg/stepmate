@@ -18,6 +18,7 @@ def _get_song_from_songdir(songdir):
     song_name = os.path.basename(songdir)
     sm_file = os.path.join(songdir, f'{song_name}.sm')
     assert os.path.exists(sm_file)
+    print("aksdjfoajsdofj")
 
     artist = "Unknown"
     banner_encoded = None

@@ -26,6 +26,9 @@
             {data : 'title', searchable: true, orderable: true},
             {data : 'artist', searchable: true, orderable: true},
             {data : 'group', searchable: true, orderable: true},
+			{data : 'banner_data', render: function (data, type, row, meta) {
+					return '<img src="' + data + '" height="50" width="50"/>';
+				  }},
         ],
       });
     });

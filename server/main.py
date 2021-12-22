@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import request, render_template
+from flask import request, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import insert
 
@@ -21,6 +21,7 @@ class Song(db.Model):
 	title = db.Column(db.String(256))
 	artist = db.Column(db.String(256))	
 	group = db.Column(db.String(256))
+	banner_data = db.Column(db.BLOB)
 	
 	def to_dict(self):
 		return {
@@ -51,7 +52,7 @@ def post_add():
 
 	all_songs = [r.to_dict() for r in db.session.query(Song).all()]
 	for song in songs:
-		if song in all_songs:
+		if { k : song[k] for k in EXPECTED_COLS } in all_songs:
 			dups.append(song)
 		else:
 			added.append(song)
@@ -63,7 +64,10 @@ def post_add():
 
 	# TODO: log levels to dump added, dups
 
-	return 'Success!', 200
+	return jsonify({
+		'num_new_songs' : len(added),
+		'num_duplicates' : len(dups),
+		}), 200
 
 @app.route("/songs", methods=['GET'])
 def get_songs():
