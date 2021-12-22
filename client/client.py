@@ -3,6 +3,7 @@ import argparse
 import os
 import json
 import gzip
+import base64
 
 def _enumerate_remote_songs(host, port):
     uri = f'http://{host}:{port}/api/songs/list'
@@ -23,7 +24,6 @@ def _get_song_from_songdir(songdir):
     banner_encoded = None
     with open(sm_file, 'r', encoding="ISO-8859-1") as fr:
         for line in fr.readlines():
-            print(line)
             if line[0] != '#':
                 continue
 
@@ -32,16 +32,17 @@ def _get_song_from_songdir(songdir):
                 # Kill the trailing semicolon
                 value = line.strip()[idx + 1:][:-1]
 
-            if line.startswith("#BANNER"):
+            if line.startswith("#BANNER") or line.startswith("#BACKGROUND"):
                 banner_file = os.path.join(songdir, value)
-                print(banner_file)
+                if not os.path.isfile(banner_file):
+                    continue
+
                 if not os.path.exists(banner_file):
                     break
                 
                 with open(banner_file, 'rb') as fr_banner:
                     banner_data_str = base64.b64encode(fr_banner.read())                    
                     banner_encoded = f'data:image/png;base64, {banner_data_str}'
-                    print(banner_encoded)   
             elif line.startswith("#ARTIST"):
                 artist = value
 
@@ -51,7 +52,8 @@ def _get_song_from_songdir(songdir):
     return {
         'title' : song_name,
         'group' : group_name,
-        'artist': artist
+        'artist': artist,
+        'banner_data' : banner_encoded,
     }
 
 def _enumerate_local_songs(stepmania_songs_dir):
@@ -101,7 +103,10 @@ def main(args):
 
     songs_to_send = local_songs
     if args.dump_songs:
-        print(json.dumps(songs_to_send))
+        MAX_DUMP_SONGS = 100
+        songs_to_dump = songs_to_send if len(songs_to_send) < MAX_DUMP_SONGS \
+            else songs_to_send[:MAX_DUMP_SONGS]
+        print(json.dumps(songs_to_dump))
     else:
         _server_add_songs(args.server_host, args.server_port, songs_to_send)
 
