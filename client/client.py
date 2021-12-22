@@ -2,6 +2,7 @@ import requests
 import argparse
 import os
 import json
+import gzip
 
 def _enumerate_remote_songs(host, port):
     uri = f'http://{host}:{port}/api/songs/list'
@@ -57,14 +58,14 @@ def _server_add_songs(host, port, songs_to_send):
     headers = { 'Content-Type' : 'application/json' }
     uri = f'http://{host}:{port}/api/songs/add'
 
-    for song in songs_to_send:
-        r_post = requests.post(uri, json=song, headers=headers)
-        title = song['title']
-        if r_post.status_code != 200:
-            print(f'Failed to send song: {title}')
-            print(f'Status code: {r_post.status_code}')
-        else:
-            print(f'Sent {title}')
+    songs_to_send_encoded = json.dumps(songs_to_send).encode('utf-8')
+    gz_songs_to_send = gzip.compress(songs_to_send_encoded)
+    r_post = requests.post(uri, data=gz_songs_to_send, headers=headers)
+    if r_post.status_code != 200:
+        print(f'Failed to send songs to server')
+        print(f'Status code: {r_post.status_code}')
+    else:
+        print(f'Sent {len(songs_to_send)} songs to server')
 
 def main(args):
     if args.songs_file and os.path.exists(args.songs_file) and os.path.isfile(args.songs_file):
@@ -80,11 +81,6 @@ def main(args):
             exit(-1)
 
         local_songs = _enumerate_local_songs(args.songs_dir)
-
-    # TODO: Only send what's missing on the server. Issue is, tough to check for duplicates right
-    # now without further insights into what's actually in a song. Need stepmania file parsing
-    # support.
-    # remote_songs = _enumerate_remote_songs(args.server_host, args.server_port)
 
     songs_to_send = local_songs
     if args.dump_songs:
