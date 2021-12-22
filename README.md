@@ -10,7 +10,7 @@ Stretch goals which may never happen:
 - Integrations with Stepmania for queuing up songs in a social setting and smarter profile management to track song stats and performance
 - On-the-fly song downloads from centralized song and stepchart repositories
 
-At the moment, Stepmate has only been tested on Ubuntu Linux, but I do want to support Windows and other Linux flavors when I'm happier with the state of the basic feature set.
+At the moment, Stepmate has only been tested on select Debian-based flavors of Linux, but I do want to support Windows and other Linux flavors when I'm happier with the state of the basic feature set.
 
 # Running Stepmate
 
