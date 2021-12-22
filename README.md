@@ -15,6 +15,7 @@ At the moment, Stepmate has only been tested on Ubuntu Linux, but I do want to s
 The server stores song data provided by the client and serves it all through a simple front-end. It needs to be running before the client attempts to reach it:
 
 ```sh
+$ pipenv shell
 $ ./scripts/test_server.sh
 ```
 
