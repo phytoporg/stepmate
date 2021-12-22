@@ -4,10 +4,10 @@
   <table id="data" class="table table-striped nowrap">
     <thead>
       <tr>
-        <th>Banner</th>
         <th>Title</th>
         <th>Artist</th>
         <th>Group</th>
+        <th>Banner</th>
       </tr>
     </thead>
     <tbody>
@@ -24,12 +24,12 @@
         responsive: true,
         pageLength: 50,
         columns : [
-            {data : 'banner_data', render: function(data) {
-                return '<img src="data:image/png;base64, ' + data + '" height=80 width=210 />'
-            }},
             {data : 'title', searchable: true, orderable: true},
             {data : 'artist', searchable: true, orderable: true},
             {data : 'group', searchable: true, orderable: true},
+            {data : 'banner_data', searchable: false, orderable: false, render: function(data) {
+                return '<img src="data:image/png;base64, ' + data + '" height=80 width=210 />'
+            }},
         ],
       });
     });

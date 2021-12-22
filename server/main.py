@@ -15,6 +15,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 METADATA_COLS = ['title', 'artist', 'group']
 EXPECTED_COLS = ['title', 'artist', 'group', 'banner_data']
 
+# Get the "no images available" image encoding.
+with open('images/no-image-available.png', 'rb') as fr_noim:
+    no_images_banner = base64.b64encode(fr_noim.read()).decode('utf-8')
+
 # Initialize the db
 db = SQLAlchemy(app)
 class Song(db.Model):
@@ -65,6 +69,9 @@ def post_add():
             dups.append(song)
         else:
             added.append(song)
+            if not song['banner_data']:
+                song['banner_data'] = no_images_banner
+
             db.session.add(Song(**song))
             
     db.session.commit()
