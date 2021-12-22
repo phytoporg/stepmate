@@ -3,7 +3,6 @@ from flask import request, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import insert
 
-import argparse
 import gzip
 import json
 import base64
@@ -62,10 +61,6 @@ def post_add():
 
     all_songs = [r.metadata_dict() for r in db.session.query(Song).all()]
     for song in songs:
-        # Reencode binary data
-        # song['banner_data'] = song['banner_data'].decode('utf-8')
-        #print(song['banner_data'])
-
         if { k : song[k] for k in METADATA_COLS } in all_songs:
             dups.append(song)
         else:
@@ -134,12 +129,4 @@ def api_data():
     }
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--drop-db', action='store_true')
-
-    args = parser.parse_args()
-    if args.drop_db:
-        db.drop_all()
-
-
     app.run(host='0.0.0.0')
