@@ -6,13 +6,15 @@ from sqlalchemy import insert
 import argparse
 import gzip
 import json
+import base64
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///songs.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Don't forget to update this when changing the schema!
-EXPECTED_COLS = ['title', 'artist', 'group']
+METADATA_COLS = ['title', 'artist', 'group']
+EXPECTED_COLS = ['title', 'artist', 'group', 'banner_data']
 
 # Initialize the db
 db = SQLAlchemy(app)
@@ -21,13 +23,21 @@ class Song(db.Model):
     title = db.Column(db.String(256))
     artist = db.Column(db.String(256))  
     group = db.Column(db.String(256))
-    banner_data = db.Column(db.BLOB)
+    banner_data = db.Column(db.Text)
     
+    def metadata_dict(self):
+        return {
+            'title' : self.title,
+            'artist' : self.artist,
+            'group' : self.group,
+        }
+
     def to_dict(self):
         return {
             'title' : self.title,
             'artist' : self.artist,
             'group' : self.group,
+            'banner_data' : self.banner_data.decode('utf-8')
         }
 
 db.create_all()
@@ -50,13 +60,16 @@ def post_add():
     # Not sure how to do this efficiently :(
     added, dups = [], []
 
-    all_songs = [r.to_dict() for r in db.session.query(Song).all()]
+    all_songs = [r.metadata_dict() for r in db.session.query(Song).all()]
     for song in songs:
-        if { k : song[k] for k in EXPECTED_COLS } in all_songs:
+        # Reencode binary data
+        # song['banner_data'] = song['banner_data'].decode('utf-8')
+        #print(song['banner_data'])
+
+        if { k : song[k] for k in METADATA_COLS } in all_songs:
             dups.append(song)
         else:
             added.append(song)
-            print(song)
             db.session.add(Song(**song))
             
     db.session.commit()
@@ -112,8 +125,9 @@ def api_data():
     length = request.args.get('length', type=int)
     query = query.offset(start).limit(length)
 
+    data = [song.to_dict() for song in query]
     return {
-        'data' : [song.to_dict() for song in query],
+        'data' : data,
         'recordsFiltered' : num_filtered,
         'recordsTotal' : Song.query.count(),
         'draw' : request.args.get('draw', type=int)

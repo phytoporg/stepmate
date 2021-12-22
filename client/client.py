@@ -32,7 +32,7 @@ def _get_song_from_songdir(songdir):
                 # Kill the trailing semicolon
                 value = line.strip()[idx + 1:][:-1]
 
-            if line.startswith("#BANNER") or line.startswith("#BACKGROUND"):
+            if line.startswith("#BANNER"):
                 banner_file = os.path.join(songdir, value)
                 if not os.path.isfile(banner_file):
                     continue
@@ -54,7 +54,7 @@ def _get_song_from_songdir(songdir):
         'group' : group_name,
         'artist': artist,
         'banner_data' : banner_encoded,
-    }
+    } if artist and banner_data else None
 
 def _enumerate_local_songs(stepmania_songs_dir):
     groups = [d for d in os.listdir(stepmania_songs_dir) \
@@ -69,7 +69,9 @@ def _enumerate_local_songs(stepmania_songs_dir):
 
         for songdir in group_song_dirs:
             abs_songdir = os.path.join(stepmania_songs_dir, group_dir, songdir)
-            local_songdirs.append(_get_song_from_songdir(abs_songdir))
+            song = _get_song_from_songdir(abs_songdir)
+            if song:
+                local_songdirs.append(song)
 
     return local_songdirs
 
@@ -101,7 +103,9 @@ def main(args):
 
         local_songs = _enumerate_local_songs(args.songs_dir)
 
-    songs_to_send = local_songs
+    # Working around my crappy workflow. TODO: FIX.
+    songs_to_send = [s for s in local_songs if len(s['artist']) > 0]
+        
     if args.dump_songs:
         MAX_DUMP_SONGS = 100
         songs_to_dump = songs_to_send if len(songs_to_send) < MAX_DUMP_SONGS \
