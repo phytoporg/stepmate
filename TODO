@@ -2,7 +2,9 @@ Make a note somewhere, these were the instructions I followed to set this all up
 
 NEXT:
 - Client can delete a song
-- Client add can chunk songs (persisting to db for every add is super slow)
+- Client sends banner data in a separate call?
+- Web view can stream and play preview track audio
+- Logins for users to create and manage lists
 
 DONE:
 - Rename this project something sensible
@@ -16,3 +18,5 @@ DONE:
 - Some kinda test dataset for the client
 - Server actually persists song data somewhere
 - Response responds w/list of cached songs
+- Client add can chunk songs (persisting to db for every add is super slow)
+- Client can send banner data
