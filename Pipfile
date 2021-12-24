@@ -8,6 +8,9 @@ Flask = "*"
 uWSGI = "*"
 flask-sqlalchemy = "*"
 requests = "*"
+websockets = "*"
+audioread = "*"
+numpy = "*"
 
 [dev-packages]
 
