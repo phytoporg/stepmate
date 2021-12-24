@@ -1,5 +1,5 @@
 #!/bin/bash
 
 cd "$(dirname "$0")/../server"
-uwsgi --socket 0.0.0.0:8000 --protocol=http -w main:app
+uwsgi --socket :8000 --protocol=http --http-websockets -w main:app
 cd -

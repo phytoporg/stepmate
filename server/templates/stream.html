@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- Keep the DataTable stuff for now -->
+    <title>{{ title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>{{ title }}</h1>
+      <hr>
+      {% block content %}{% endblock %}
+    </div>
+    <script>
+    (async() => {
+        const audioContext = new AudioContext();
+        await audioContext.audioWorklet.addModule('js/playback-audio-processor.js');
+        const playbackAudioNode = new AudioWorkletNode(audioContext, 'playback-audio-processor');
+        playbackAudioNode.connect(audioContext.destination);
+
+        var wsWorker = new Worker('js/ws-data-listener-decoder.js');
+        wsWorker.onmessage(function(e) {
+            // Get an AudioBufferSourceNode.
+
+            // This is the AudioNode to use when we want to play an AudioBuffer
+            var source = audioContext.createBufferSource();
+
+            // set the buffer in the AudioBufferSourceNode
+            source.buffer = e.data;
+
+            // connect the AudioBufferSourceNode to the
+            // destination so we can hear the sound
+            source.connect(playbackAudioNode);
+
+            // start the source playing
+            source.start();
+        }
+
+        window.addEventListener('load', (event) => {
+            wsWorker.postMessage({'cmd' : 'init', 'host' : 'localhost', 'port' : 5001})
+        });
+    })();
+        
+    </script>
+  </body>
+</html>

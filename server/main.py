@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import request, render_template, jsonify
+from flask import request, render_template, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import insert
 
@@ -17,123 +17,131 @@ EXPECTED_COLS = ['title', 'artist', 'group', 'banner_data']
 
 # Get the "no images available" image encoding.
 with open('images/no-image-available.png', 'rb') as fr_noim:
-    no_images_banner = base64.b64encode(fr_noim.read()).decode('utf-8')
+	no_images_banner = base64.b64encode(fr_noim.read()).decode('utf-8')
 
 # Initialize the db
 db = SQLAlchemy(app)
 class Song(db.Model):
-    id = db.Column('song_id', db.Integer, primary_key=True)
-    title = db.Column(db.String(256))
-    artist = db.Column(db.String(256))  
-    group = db.Column(db.String(256))
-    banner_data = db.Column(db.Text)
-    
-    def metadata_dict(self):
-        return {
-            'title' : self.title,
-            'artist' : self.artist,
-            'group' : self.group,
-        }
+	id = db.Column('song_id', db.Integer, primary_key=True)
+	title = db.Column(db.String(256))
+	artist = db.Column(db.String(256))	
+	group = db.Column(db.String(256))
+	banner_data = db.Column(db.Text)
+	
+	def metadata_dict(self):
+		return {
+			'title' : self.title,
+			'artist' : self.artist,
+			'group' : self.group,
+		}
 
-    def to_dict(self):
-        return {
-            'title' : self.title,
-            'artist' : self.artist,
-            'group' : self.group,
-            'banner_data' : self.banner_data
-        }
+	def to_dict(self):
+		return {
+			'title' : self.title,
+			'artist' : self.artist,
+			'group' : self.group,
+			'banner_data' : self.banner_data
+		}
 
 db.create_all()
 # db.drop_all()
 
 @app.route("/")
 def first_function():
-    return "<html><body><h1 style='color:red'>I am hosted on Raspberry Pi !!!</h1></body></html>"
+	return "<html><body><h1 style='color:red'>I am hosted on Raspberry Pi !!!</h1></body></html>"
 
 @app.route("/api/songs/list", methods=['GET'])
 def get_list():
-    return { 'songs' : Song.query.all() }
+	return { 'songs' : Song.query.all() }
 
 @app.route("/api/songs/add", methods=['POST'])
 def post_add():
-    gz_songs = request.data
-    songs_decompressed = gzip.decompress(gz_songs)
-    songs = json.loads(songs_decompressed.decode('utf-8'))
+	gz_songs = request.data
+	songs_decompressed = gzip.decompress(gz_songs)
+	songs = json.loads(songs_decompressed.decode('utf-8'))
 
-    # Not sure how to do this efficiently :(
-    added, dups = [], []
+	# Not sure how to do this efficiently :(
+	added, dups = [], []
 
-    all_songs = [r.metadata_dict() for r in db.session.query(Song).all()]
-    for song in songs:
-        if { k : song[k] for k in METADATA_COLS } in all_songs:
-            dups.append(song)
-        else:
-            added.append(song)
-            if not song['banner_data']:
-                song['banner_data'] = no_images_banner
+	all_songs = [r.metadata_dict() for r in db.session.query(Song).all()]
+	for song in songs:
+		if { k : song[k] for k in METADATA_COLS } in all_songs:
+			dups.append(song)
+		else:
+			added.append(song)
+			if not song['banner_data']:
+				song['banner_data'] = no_images_banner
 
-            db.session.add(Song(**song))
-            
-    db.session.commit()
-    print(f'Added {len(added)} new songs')
-    print(f'Saw {len(dups)} duplicates')
+			db.session.add(Song(**song))
+			
+	db.session.commit()
+	print(f'Added {len(added)} new songs')
+	print(f'Saw {len(dups)} duplicates')
 
-    # TODO: log levels to dump added, dups
+	# TODO: log levels to dump added, dups
 
-    return jsonify({
-        'num_new_songs' : len(added),
-        'num_duplicates' : len(dups),
-        }), 200
+	return jsonify({
+		'num_new_songs' : len(added),
+		'num_duplicates' : len(dups),
+		}), 200
 
 @app.route("/songs", methods=['GET'])
 def get_songs():
-    return render_template('songs.html', title='Stepmate Song Search')
+	return render_template('songs.html', title='Stepmate Song Search')
+
+@app.route("/tempstream", methods=['GET'])
+def get_streaming():
+	return render_template('stream.html', title='Trying Audio Streaming')
+
+@app.route('/js/<path:path>')
+def send_js(path):
+	return send_from_directory('js', path)
 
 @app.route("/api/data")
 def api_data():
-    query = Song.query
+	query = Song.query
 
-    # search filter
-    search = request.args.get('search[value]')
-    if search:
-        query = query.filter(db.or_(
-            Song.title.like(f'%{search}%'),
-            Song.artist.like(f'%{search}%'),
-            Song.group.like(f'%{search}%'),
-        ))
-    num_filtered = query.count()
+	# search filter
+	search = request.args.get('search[value]')
+	if search:
+		query = query.filter(db.or_(
+			Song.title.like(f'%{search}%'),
+			Song.artist.like(f'%{search}%'),
+			Song.group.like(f'%{search}%'),
+		))
+	num_filtered = query.count()
 
-    # sorting
-    order = []
-    i = 0
-    while True:
-        col_index = request.args.get(f'order[{i}][column]')
-        if col_index is None:
-            break
-        col_name = request.args.get(f'columns[{col_index}][data]')
-        if col_name not in EXPECTED_COLS:
-            col_name = 'name'
-        descending = request.args.get(f'order[{i}][dir]') == 'desc'
-        col = getattr(Song, col_name)
-        if descending:
-            col = col.desc()
-        order.append(col)
-        i += 1
-    if order:
-        query = query.order_by(*order)
+	# sorting
+	order = []
+	i = 0
+	while True:
+		col_index = request.args.get(f'order[{i}][column]')
+		if col_index is None:
+			break
+		col_name = request.args.get(f'columns[{col_index}][data]')
+		if col_name not in EXPECTED_COLS:
+			col_name = 'name'
+		descending = request.args.get(f'order[{i}][dir]') == 'desc'
+		col = getattr(Song, col_name)
+		if descending:
+			col = col.desc()
+		order.append(col)
+		i += 1
+	if order:
+		query = query.order_by(*order)
 
-    # pagination
-    start = request.args.get('start', type=int)
-    length = request.args.get('length', type=int)
-    query = query.offset(start).limit(length)
+	# pagination
+	start = request.args.get('start', type=int)
+	length = request.args.get('length', type=int)
+	query = query.offset(start).limit(length)
 
-    data = [song.to_dict() for song in query]
-    return {
-        'data' : data,
-        'recordsFiltered' : num_filtered,
-        'recordsTotal' : Song.query.count(),
-        'draw' : request.args.get('draw', type=int)
-    }
+	data = [song.to_dict() for song in query]
+	return {
+		'data' : data,
+		'recordsFiltered' : num_filtered,
+		'recordsTotal' : Song.query.count(),
+		'draw' : request.args.get('draw', type=int)
+	}
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0')
+	app.run(host='0.0.0.0')
